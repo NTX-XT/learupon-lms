@@ -155,10 +155,11 @@ class LearnUponTranscriptManager {    constructor() {
     }
       /**
      * Find user by email
-     */
-    async findUserByEmail(email) {
+     */    async findUserByEmail(email) {
         try {
             const url = this.getApiUrl(`users?email=${encodeURIComponent(email)}`);
+            console.log('Finding user with email:', email, 'URL:', url);
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: this.getFetchHeaders()
@@ -169,13 +170,27 @@ class LearnUponTranscriptManager {    constructor() {
             }
             
             const data = await response.json();
+            console.log('User search response:', data);
+            
             const users = data.users || data.data || data || [];
+            
+            if (!Array.isArray(users)) {
+                console.error('Unexpected response format:', data);
+                throw new Error('Invalid response format from users API');
+            }
             
             if (users.length === 0) {
                 throw new Error(`User with email "${email}" not found`);
             }
             
-            return users[0];
+            const user = users[0];
+            console.log('Found user:', user);
+            
+            if (!user.id) {
+                throw new Error(`User found but has no valid ID: ${JSON.stringify(user)}`);
+            }
+            
+            return user;
             
         } catch (error) {
             console.error('Error finding user:', error);
@@ -184,10 +199,11 @@ class LearnUponTranscriptManager {    constructor() {
     }
       /**
      * Find group by name
-     */
-    async findGroupByName(groupName) {
+     */    async findGroupByName(groupName) {
         try {
             const url = this.getApiUrl('groups');
+            console.log('Finding group with name:', groupName, 'URL:', url);
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: this.getFetchHeaders()
@@ -198,7 +214,14 @@ class LearnUponTranscriptManager {    constructor() {
             }
             
             const data = await response.json();
+            console.log('Groups search response:', data);
+            
             const groups = data.groups || data.data || data || [];
+            
+            if (!Array.isArray(groups)) {
+                console.error('Unexpected response format:', data);
+                throw new Error('Invalid response format from groups API');
+            }
             
             const matchingGroup = groups.find(group => 
                 group.name && group.name.toLowerCase().includes(groupName.toLowerCase())
@@ -206,6 +229,12 @@ class LearnUponTranscriptManager {    constructor() {
             
             if (!matchingGroup) {
                 throw new Error(`Group containing "${groupName}" not found`);
+            }
+            
+            console.log('Found group:', matchingGroup);
+            
+            if (!matchingGroup.id) {
+                throw new Error(`Group found but has no valid ID: ${JSON.stringify(matchingGroup)}`);
             }
             
             return matchingGroup;
@@ -305,8 +334,7 @@ class LearnUponTranscriptManager {    constructor() {
     
     /**
      * Load user transcript
-     */
-    async loadUserTranscript() {
+     */    async loadUserTranscript() {
         if (this.isLoading) return;
         
         this.showLoading('Finding user and loading transcript...');
@@ -314,6 +342,12 @@ class LearnUponTranscriptManager {    constructor() {
         try {
             // Find user by email
             const user = await this.findUserByEmail(this.testData.userEmail);
+            
+            // Check if user was found
+            if (!user || !user.id) {
+                throw new Error(`User with email "${this.testData.userEmail}" not found or has no valid ID`);
+            }
+            
             this.userId = user.id;
             
             this.showMessage(`Found user: ${user.name || user.email}. Loading enrollments and completions...`, 'info');
@@ -345,8 +379,7 @@ class LearnUponTranscriptManager {    constructor() {
     
     /**
      * Load group transcript
-     */
-    async loadGroupTranscript() {
+     */    async loadGroupTranscript() {
         if (this.isLoading) return;
         
         this.showLoading('Finding group and loading transcript...');
@@ -354,6 +387,12 @@ class LearnUponTranscriptManager {    constructor() {
         try {
             // Find group by name
             const group = await this.findGroupByName(this.testData.companyName);
+            
+            // Check if group was found
+            if (!group || !group.id) {
+                throw new Error(`Group containing "${this.testData.companyName}" not found or has no valid ID`);
+            }
+            
             this.groupId = group.id;
             
             this.showMessage(`Found group: ${group.name}. Loading member transcripts...`, 'info');

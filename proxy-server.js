@@ -21,7 +21,13 @@ app.use(cors({
 app.use(express.json());
 
 // Serve static files from current directory
-app.use(express.static(path.join(__dirname)));
+console.log('Static files directory:', path.join(__dirname));
+app.use(express.static(path.join(__dirname), {
+    index: false,  // Don't auto-serve index files for directories
+    setHeaders: (res, path) => {
+        console.log('Serving static file:', path);
+    }
+}));
 
 // LearnUpon API configuration
 const LEARUPON_CONFIG = {
@@ -44,6 +50,8 @@ app.all('/api/learupon/*', async (req, res) => {
         const url = `${LEARUPON_CONFIG.baseUrl}/${apiPath}${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`;
         
         console.log(`Proxying request to: ${url}`);
+        console.log('Request headers:', req.headers);
+        console.log('Request method:', req.method);
         
         const response = await fetch(url, {
             method: req.method,
@@ -55,11 +63,27 @@ app.all('/api/learupon/*', async (req, res) => {
             body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
         });
         
+        console.log(`Response status: ${response.status} ${response.statusText}`);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
         if (!response.ok) {
-            throw new Error(`LearnUpon API error: ${response.status} - ${response.statusText}`);
+            const errorText = await response.text();
+            console.error(`LearnUpon API error: ${response.status} - ${response.statusText}`);
+            console.error('Error response body:', errorText);
+            
+            // Return detailed error information
+            return res.status(response.status).json({
+                error: 'LearnUpon API error',
+                status: response.status,
+                statusText: response.statusText,
+                message: errorText,
+                url: url.replace(/\/api\/v1.*/, '/api/v1/[REDACTED]'), // Hide sensitive URL parts
+                timestamp: new Date().toISOString()
+            });
         }
         
         const data = await response.json();
+        console.log('Response data keys:', Object.keys(data));
         res.json(data);
         
     } catch (error) {
@@ -70,6 +94,65 @@ app.all('/api/learupon/*', async (req, res) => {
             details: error.toString()
         });
     }
+});
+
+// Debug routes for static files
+app.get('/debug/files', (req, res) => {
+    const fs = require('fs');
+    const files = fs.readdirSync(__dirname);
+    res.json({
+        directory: __dirname,
+        files: files.filter(f => f.endsWith('.html') || f.endsWith('.js') || f.endsWith('.css'))
+    });
+});
+
+// Test API credentials
+app.get('/debug/api-test', async (req, res) => {
+    try {
+        console.log('Testing API credentials...');
+        const url = `${LEARUPON_CONFIG.baseUrl}/users?limit=1`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': getAuthHeader(),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        const data = await response.text();
+        
+        res.json({
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+            dataPreview: data.substring(0, 500),
+            credentials: {
+                username: LEARUPON_CONFIG.username,
+                baseUrl: LEARUPON_CONFIG.baseUrl,
+                authHeaderLength: getAuthHeader().length
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            error: 'API test failed',
+            message: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+// Direct routes for HTML files
+app.get('/groups.html', (req, res) => {
+    console.log('Direct route accessed: /groups.html');
+    res.sendFile(path.join(__dirname, 'groups.html'));
+});
+
+app.get('/transcript.html', (req, res) => {
+    console.log('Direct route accessed: /transcript.html');
+    res.sendFile(path.join(__dirname, 'transcript.html'));
 });
 
 // Health check endpoint
