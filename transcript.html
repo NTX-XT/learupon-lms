@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnUpon Transcript Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            font-size: 20px;
+            color: #666;
+            font-weight: normal;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background-color: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #005a87;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .user-info {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .transcript-section {
+            background: white;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #007cba;
+            margin: 0;
+        }
+        
+        .course-category {
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .category-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .category-header:hover {
+            background: #e9ecef;
+        }
+        
+        .category-title {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        
+        .category-count {
+            background: #007cba;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .course-list {
+            background: white;
+        }
+        
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .course-table th {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        .course-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f8f9fa;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .course-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .course-title {
+            font-weight: 500;
+            color: #007cba;
+        }
+        
+        .course-type {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .course-type.certification {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .date-cell {
+            white-space: nowrap;
+        }
+        
+        .status-completed {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-enrolled {
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .status-expired {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .certificate-link {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .certificate-link:hover {
+            background: #218838;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #f5c6cb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #c3e6cb;
+        }
+        
+        .category-collapsed .course-list {
+            display: none;
+        }
+        
+        .expand-icon {
+            transition: transform 0.3s;
+        }
+        
+        .category-collapsed .expand-icon {
+            transform: rotate(-90deg);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-row {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .course-table {
+                font-size: 12px;
+            }
+            
+            .course-table th,
+            .course-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LearnUpon Transcript Dashboard</h1>
+        <p class="subtitle">Certifications are valid for two years from date of completion.</p>
+        
+        <div class="user-info">
+            <div class="user-info-grid">
+                <div class="info-item">
+                    <div class="info-label">User Email</div>
+                    <div class="info-value" id="userEmail">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Company/Group</div>
+                    <div class="info-value" id="companyName">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Last Updated</div>
+                    <div class="info-value" id="lastUpdated">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total Enrollments</div>
+                    <div class="info-value" id="totalEnrollments">Loading...</div>
+                </div>
+            </div>
+        </div>
+          <div class="controls">
+            <button id="loadTranscriptBtn">Load User Transcript</button>
+            <button id="loadGroupTranscriptBtn">Load Group Transcript</button>
+            <button id="refreshBtn" disabled>Refresh</button>
+            <button id="configBtn" style="background-color: #6c757d;">Configuration</button>
+        </div>
+        
+        <!-- Configuration Panel -->
+        <div id="configPanel" style="display: none; background: white; padding: 20px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <h3>API Configuration</h3>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">
+                    <input type="radio" name="apiMode" value="proxy" checked> Use Proxy Server (Recommended)
+                </label>
+                <label style="display: block; margin-bottom: 5px;">
+                    <input type="radio" name="apiMode" value="direct"> Direct API (CORS Issues Expected)
+                </label>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="proxyUrl" style="display: block; margin-bottom: 5px; font-weight: bold;">Proxy URL:</label>
+                <input type="text" id="proxyUrl" value="http://localhost:3000/api/learupon" 
+                       style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;"
+                       placeholder="http://localhost:3000/api/learupon">
+                <small style="color: #666;">For production, use your deployed proxy URL (Vercel, Netlify, Azure Functions, etc.)</small>
+            </div>
+            <button id="saveConfigBtn" style="background-color: #28a745;">Save Configuration</button>
+            <button id="cancelConfigBtn" style="background-color: #6c757d;">Cancel</button>
+        </div>
+        
+        <div id="messageArea"></div>
+        
+        <!-- User Transcript Section -->
+        <div class="transcript-section" id="userTranscriptSection">
+            <div class="section-header">
+                <h2>USER TRANSCRIPT</h2>
+                <p style="margin: 0; color: #666; font-size: 14px;">Certifications are valid for two years from date of completion.</p>
+            </div>
+            <div class="section-content">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-title">Practitioner Certifications Completed</div>
+                        <div class="stat-number" id="userPractitionerCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Expert Certifications Completed</div>
+                        <div class="stat-number" id="userExpertCount">0</div>
+                    </div>
+                </div>
+                
+                <div id="userCoursesContainer">
+                    <!-- User courses will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Company/Group Transcript Section -->
+        <div class="transcript-section" id="groupTranscriptSection">
+            <div class="section-header">
+                <h2>COMPANY TRANSCRIPT</h2>
+                <p style="margin: 0; color: #666; font-size: 14px;">Certifications are valid for two years from date of completion.</p>
+            </div>
+            <div class="section-content">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-title">Practitioner Certifications Completed</div>
+                        <div class="stat-number" id="groupPractitionerCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Expert Certifications Completed</div>
+                        <div class="stat-number" id="groupExpertCount">0</div>
+                    </div>
+                </div>
+                
+                <div id="groupCoursesContainer">
+                    <!-- Group courses will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize with test data
+        window.testUserEmail = 'ziyi@alrightylabs.com';
+        window.testCompanyName = 'Alrighty Labs Pte. Ltd. (Partner)';
+    </script>
+    <script src="transcript.js"></script>
+</body>
+</html>
