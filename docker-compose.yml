@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  learupon-lms:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    volumes:
+      # Mount only necessary files, not node_modules
+      - ./groups.html:/app/groups.html:ro
+      - ./groups.js:/app/groups.js:ro
+      - ./transcript.html:/app/transcript.html:ro
+      - ./transcript.js:/app/transcript.js:ro
+      - ./proxy-server.js:/app/proxy-server.js:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
