@@ -2,12 +2,93 @@
 
 A static web application for managing LearnUpon LMS data with user transcript and group management capabilities.
 
+## 🚀 Quick Start
+
+**Live Application**: [http://20.125.24.28:3000/](http://20.125.24.28:3000/)
+
+### SSH Access (Passwordless)
+For development and maintenance, SSH access has been configured:
+
+```powershell
+# Connect using SSH alias
+ssh azure-learupon
+
+# Or connect directly
+ssh -i ~/.ssh/azure_learupon NTXPTRAdmin@20.125.24.28
+```
+
+### Application Management
+```bash
+# Check application status
+ssh azure-learupon "pm2 status"
+
+# View application logs
+ssh azure-learupon "pm2 logs learupon-lms"
+
+# Restart application
+ssh azure-learupon "pm2 restart learupon-lms"
+
+# Update deployment (from local machine)
+./deploy.sh
+```
+
+## 🔧 Development Setup
+
+### SSH Key Configuration (For Azure Server)
+
+1. **Generate SSH Key** (if not already done):
+   ```powershell
+   ssh-keygen -t rsa -b 4096 -f "$env:USERPROFILE\.ssh\azure_learupon" -N '""'
+   ```
+
+2. **Copy Public Key to Server**:
+   ```powershell
+   scp "$env:USERPROFILE\.ssh\azure_learupon.pub" NTXPTRAdmin@20.125.24.28:~/temp_key.pub
+   ```
+
+3. **Configure Server**:
+   ```bash
+   ssh NTXPTRAdmin@20.125.24.28 "mkdir -p ~/.ssh && cat ~/temp_key.pub >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys && rm ~/temp_key.pub"
+   ```
+
+4. **Create SSH Config**:
+   ```powershell
+   echo "Host azure-learupon`nHostName 20.125.24.28`nUser NTXPTRAdmin`nIdentityFile ~/.ssh/azure_learupon`nIdentitiesOnly yes`nStrictHostKeyChecking no" | Out-File -FilePath "$env:USERPROFILE\.ssh\config" -Encoding UTF8
+   ```
+
+5. **Test Connection**:
+   ```powershell
+   ssh azure-learupon "echo 'SSH connection successful!'"
+   ```
+
+### Deployment Verification
+
+Run the verification script to check deployment status:
+
+```powershell
+# Windows PowerShell
+.\verify-deployment.ps1
+
+# Linux/Mac (if using WSL or Git Bash)
+./verify-deployment.sh
+```
+
 ## Features
 
 - **User Transcript Dashboard**: View individual user certifications and course completions
 - **Group Management**: Manage company/group-level training data
 - **CORS Proxy Server**: Handle LearnUpon API requests with proper CORS handling
 - **Modern UI**: Clean, responsive interface for optimal user experience
+- **Azure Deployment**: Production-ready deployment with PM2 process management
+
+## 🏗️ Architecture
+
+### Deployment URLs
+- **Main Dashboard**: http://20.125.24.28:3000/
+- **Groups Manager**: http://20.125.24.28:3000/groups.html
+- **Transcript View**: http://20.125.24.28:3000/transcript.html
+- **Health Check**: http://20.125.24.28:3000/health
+- **API Info**: http://20.125.24.28:3000/api-info
 
 ## Project Structure
 
@@ -78,7 +159,7 @@ Update the proxy URL in the configuration panel of each dashboard to match your 
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
-COPY package*.json ./
+COPY package*.json ./  
 RUN npm install --production
 COPY . .
 EXPOSE 3000
